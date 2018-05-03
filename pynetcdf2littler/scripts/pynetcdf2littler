@@ -12,22 +12,39 @@ author:       Ronald van Haren, NLeSC (r.vanharen@esciencecenter.nl)
 import argparse
 import os
 from pynetcdf2littler.wrapper_littler import wrapper_littler
+import datetime
 
-if __name__=="__main__":
-  # define argument menu
-  description = 'Time filter Wunderground netCDF data'
-  parser = argparse.ArgumentParser(description=description)
-  # fill argument groups
-  parser.add_argument('-f', '--filelist', help='filelist containing netcdf files',
-                      default='wrapper.filelist', required=False)
-  parser.add_argument('-n', '--namelist', help='netcdf2littler namelist',
-                      required=True)
-  parser.add_argument('-d', '--outputdir', help='outputdir',
-                      required=False, default=os.getcwd())
-  parser.add_argument('-o', '--outputfile', help='name of outputfile',
-                      required=False, default='pynetcdf2littler.output')
-  opts = parser.parse_args()
 
-  # main function
-  wrapper_littler(opts.filelist, opts.namelist, opts.outputdir,
-                  opts.outputfile)
+def valid_date(s):
+    try:
+        return datetime.strptime(s, "%Y%m%d")
+    except ValueError:
+        msg = "Not a valid date: '{0}'.".format(s)
+        raise argparse.ArgumentTypeError(msg)
+
+
+if __name__ == "__main__":
+    # define argument menu
+    description = 'Time filter Wunderground netCDF data'
+    parser = argparse.ArgumentParser(description=description)
+    # fill argument groups
+    parser.add_argument('-f', '--filelist',
+                        help='filelist containing netcdf files',
+                        default='wrapper.filelist', required=False)
+    parser.add_argument('-n', '--namelist', help='netcdf2littler namelist',
+                        required=True)
+    parser.add_argument('-d', '--outputdir', help='outputdir',
+                        required=False, default=os.getcwd())
+    parser.add_argument('-o', '--outputfile', help='name of outputfile',
+                        required=False, default='pynetcdf2littler.output')
+    parser.add_argument('-s', '--startdate',
+                        help='start date - format YYYYMMDD',
+                        required=False, type=valid_date)
+    parser.add_argument('-e', '--enddate',
+                        help='end date - format YYYYMMDD',
+                        required=False, type=valid_date)
+    opts = parser.parse_args()
+
+    # main function
+    wrapper_littler(opts.filelist, opts.namelist, opts.outputdir,
+                    opts.outputfile, opts.startdate, opts.enddate)
