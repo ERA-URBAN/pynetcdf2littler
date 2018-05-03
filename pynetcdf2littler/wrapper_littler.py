@@ -92,7 +92,9 @@ class wrapper_littler:
         if self.enddate:
             nml['group_name']['enddate'] = self.enddate
         # output namelist
-        namelist_tmp = os.path.join(self.workdir, os.path.basename(self.netcdf2littler_namelist))
+        namelist_tmp = os.path.abspath(os.path.join
+                                       (self.workdir, os.path.basename
+                                        (self.netcdf2littler_namelist)))
         f90nml.write(nml, namelist_tmp,
                      force=True)
         # convert resulting ncdf file to little_R format
