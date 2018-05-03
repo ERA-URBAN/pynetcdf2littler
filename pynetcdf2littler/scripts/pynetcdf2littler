@@ -12,12 +12,13 @@ author:       Ronald van Haren, NLeSC (r.vanharen@esciencecenter.nl)
 import argparse
 import os
 from pynetcdf2littler.wrapper_littler import wrapper_littler
-import datetime
+from datetime import datetime
 
 
 def valid_date(s):
     try:
-        return datetime.strptime(s, "%Y%m%d")
+        datetime.strptime(s, "%Y%m%d")
+        return s
     except ValueError:
         msg = "Not a valid date: '{0}'.".format(s)
         raise argparse.ArgumentTypeError(msg)

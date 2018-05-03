@@ -37,6 +37,9 @@ class wrapper_littler:
         for idx, filename in enumerate(self.files):  # loop over all files
             self.process_file(filename, idx)  # process file
         self.combine_output_files()  # combine all LITTLE_R files
+        # cleanup workdir
+        if os.path.exists(self.workdir):
+            shutil.rmtree(self.workdir)
 
     def test_input(self):
         '''
@@ -80,7 +83,6 @@ class wrapper_littler:
           - extract time interval netcdf file
           - convert extracted time interval to LITTLE_R format
         '''
-        # change output name
         nml = f90nml.read(self.netcdf2littler_namelist)
         nml['group_name']['filename'] = filename
         nml['group_name']['outfile'] = 'results' + str(idx).zfill(3) + '.txt'
@@ -89,7 +91,9 @@ class wrapper_littler:
             nml['group_name']['startdate'] = self.startdate
         if self.enddate:
             nml['group_name']['enddate'] = self.enddate
-        f90nml.write(nml, self.netcdf2littler_namelist + '.input',
+        # output namelist
+        namelist_tmp = os.path.join(self.workdir, os.path.basename(self.netcdf2littler_namelist))
+        f90nml.write(nml, namelist_tmp,
                      force=True)
         # convert resulting ncdf file to little_R format
         owd = os.getcwd()
@@ -97,7 +101,7 @@ class wrapper_littler:
             os.chdir(os.path.join(self.outputdir, 'tmp'))
             subprocess.call(['convert-littler',
                              '--namelist',
-                             self.netcdf2littler_namelist + '.input'],
+                             namelist_tmp],
                             stdout=open(os.devnull, 'wb'))
         except OSError as e:
             print >>sys.stderr, "Execution failed:", e
@@ -109,8 +113,13 @@ class wrapper_littler:
         '''
         concatenate all txt files to a single outputfile
         '''
-        filenames = glob.glob(os.path.join(self.outputdir, 'workdir',
+        filenames = glob.glob(os.path.join(self.workdir,
                                            'results*txt'))
-        with open(os.path.join(self.outputdir, self.outputfile), 'w') as fout:
-            for line in fileinput.input(filenames):
-                fout.write(line)
+        if filenames:
+            with open(os.path.join
+                      (self.outputdir, self.outputfile), 'w') as fout:
+                for line in fileinput.input(filenames):
+                    fout.write(line)
+        else:
+            with open(self.outputfile, 'a'):
+                os.utime(self.outputfile, None)
