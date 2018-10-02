@@ -101,7 +101,7 @@ class wrapper_littler:
         owd = os.getcwd()
         try:
             os.chdir(os.path.join(self.outputdir, 'tmp'))
-            subprocess.call(['convert-littler',
+            subprocess.call(['netcdf2littler',
                              '--namelist',
                              namelist_tmp],
                             stdout=open(os.devnull, 'wb'))
